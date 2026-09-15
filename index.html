@@ -3,21 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khedut Mitra - Camera</title>
+    <title>ખેડૂત મિત્ર - આંતરોલ પ્રાથમિક શાળા</title>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
-</head>
-<body style="text-align: center; font-family: sans-serif; padding: 20px;">
-
-    <h2>ખેડૂત મિત્ર</h2>
     
-    <button type="button" onclick="startCamera()" style="padding: 12px 24px; font-size: 16px; cursor: pointer;">
-        કૅમેરા ચાલુ કરો
-    </button>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
 
-    <div id="webcam-container" style="margin-top: 20px;"></div>
-    <div id="label-container" style="margin-top: 15px;"></div>
-    <div id="error-log" style="color: red; margin-top: 15px; font-weight: bold;"></div>
+        body {
+            background-color: #f0f7f4;
+            color: #2d3748;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        /* શાળા અને પ્રોજેક્ટ હેડર સ્ટાઇલ */
+        .header-card {
+            background: linear-gradient(135deg, #1b5e20, #2e7d32);
+            color: white;
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+            margin-bottom: 20px;
+        }
+
+        .school-name {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .school-location {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 8px;
+        }
+
+        .project-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #ffe082;
+            margin-top: 5px;
+        }
+
+        /* મુખ્ય કન્ટેનર કાર્ડ */
+        .main-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 480px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+        }
+
+        #webcam-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        #webcam-container canvas {
+            border-radius: 12px;
+            border: 3px solid #81c784;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            max-width: 100%;
+            height: auto;
+        }
+
+        .results-title {
+            font-weight: bold;
+            color: #1b5e20;
+            margin-bottom: 12px;
+            text-align: left;
+            font-size: 1.05rem;
+            display: none;
+        }
+
+        #label-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .prediction-badge {
+            background-color: #f1f8e9;
+            border-left: 5px solid #4caf50;
+            padding: 12px 16px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2e7d32;
+        }
+
+        #error-log {
+            color: #d32f2f;
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- શાળા અને પ્રોજેક્ટ ની વિગત -->
+    <div class="header-card">
+        <div class="school-name">🏫 આંતરોલ પ્રાથમિક શાળા</div>
+        <div class="school-location">તાલુકો - થરાદ, જીલ્લો - વાવ થરાદ</div>
+        <div class="project-title">🌱 ખેડૂત મિત્ર (પાકમાં થતા રોગની ઓળખ)</div>
+    </div>
+
+    <!-- કેમેરા અને પરિણામ માટેનું કાર્ડ -->
+    <div class="main-card">
+        <button type="button" class="btn-start" onclick="startCamera()">📷 કૅમેરા ચાલુ કરો</button>
+
+        <div id="webcam-container"></div>
+        
+        <div id="results-title" class="results-title">📊 રોગનું નિદાન (Prediction):</div>
+        <div id="label-container"></div>
+        
+        <div id="error-log"></div>
+    </div>
+
+    <div class="footer">
+        © આંતરોલ પ્રાથમિક શાળા - શૈક્ષણિક પ્રોજેક્ટ
+    </div>
 
     <script>
         const URL = "./my_model/";
@@ -26,8 +180,10 @@
         async function startCamera() {
             const errorDiv = document.getElementById("error-log");
             const webcamContainer = document.getElementById("webcam-container");
+            const resultsTitle = document.getElementById("results-title");
+            
             errorDiv.innerHTML = "";
-            webcamContainer.innerHTML = ""; // જૂનો કેમેરા કેનવાસ સાફ કરવા માટે
+            webcamContainer.innerHTML = "";
 
             try {
                 // ૧. મોડેલ લોડ કરો
@@ -36,36 +192,37 @@
                 model = await tmImage.load(modelURL, metadataURL);
                 maxPredictions = model.getTotalClasses();
 
-                // ૨. Teachable Machine કેમેરા સેટઅપ
-                const width = 250;
-                const height = 250;
-                const flip = false; // બેક કેમેરા માટે false રાખવું
+                // ૨. કૅમેરા સેટઅપ
+                const width = 280;
+                const height = 280;
+                const flip = false;
                 
                 webcam = new tmImage.Webcam(width, height, flip);
-                await webcam.setup({ facingMode: "environment" }); // કેમેરા માટે વિનંતી
-                await webcam.play(); // વીડિયો સ્ટ્રીમ ચાલુ કરો
+                await webcam.setup({ facingMode: "environment" });
+                await webcam.play();
                 
                 window.requestAnimationFrame(loop);
 
-                // ૩. કેમેરાનો કેનવાસ DOM માં ઉમેરો
-                webcam.canvas.style.border = "2px solid #333";
-                webcam.canvas.style.borderRadius = "8px";
+                // ૩. કેમેરાનો કેનવાસ ઉમેરો
                 webcamContainer.appendChild(webcam.canvas);
+                resultsTitle.style.display = "block";
 
                 // ૪. લેબલ કન્ટેનર રેડી કરો
                 labelContainer = document.getElementById("label-container");
                 labelContainer.innerHTML = "";
                 for (let i = 0; i < maxPredictions; i++) {
-                    labelContainer.appendChild(document.createElement("div"));
+                    const badge = document.createElement("div");
+                    badge.className = "prediction-badge";
+                    labelContainer.appendChild(badge);
                 }
             } catch (err) {
                 console.error(err);
-                errorDiv.innerHTML = "Error: " + err.message;
+                errorDiv.innerHTML = "Error: " + err.message + "<br>કૃપા કરીને કૅમેરા Permission Allow કરો.";
             }
         }
 
         async function loop() {
-            webcam.update(); // કૅમેરાની દરેક ફ્રેમ અપડેટ કરો
+            webcam.update();
             await predict();
             window.requestAnimationFrame(loop);
         }
@@ -73,9 +230,13 @@
         async function predict() {
             const prediction = await model.predict(webcam.canvas);
             for (let i = 0; i < maxPredictions; i++) {
-                const classPrediction =
-                    prediction[i].className + ": " + (prediction[i].probability * 100).toFixed(0) + "%";
-                labelContainer.childNodes[i].innerHTML = classPrediction;
+                const className = prediction[i].className;
+                const percentage = (prediction[i].probability * 100).toFixed(0) + "%";
+                
+                labelContainer.childNodes[i].innerHTML = `
+                    <span>${className}</span>
+                    <span>${percentage}</span>
+                `;
             }
         }
     </script>
